@@ -1,9 +1,9 @@
 import express, {Request, Response} from "express";
-import { body, validationResult } from "express-validator";
+import { body } from "express-validator";
 import { User } from "../models/user";
 import jwt from 'jsonwebtoken';
 
-import { RequestValidationError } from "../errors/request-validation";
+import { validateRequest } from "../middlewares/validate-request";
 import { BadRequestError } from "../errors/bad-request-error";
 
 const router = express.Router();
@@ -17,15 +17,9 @@ router.post("/api/users/signup", [
             .isLength({ min: 4, max: 20 })
             .withMessage('Password must be between 4 and 20 characters')
     ], 
+    // error checking middleware, need to call it after capturing errors from error handler
+    validateRequest,
     async (req: Request, res: Response) => {
-        const errors = validationResult(req);
-
-        // if there are any errors picked up from express-validator
-        if (!errors.isEmpty()) {
-            // throw the error, the error middleware will handle the error there
-            throw new RequestValidationError(errors.array());
-        }
-
         // check if user with email already exists
         const { email, password } = req.body;
 
