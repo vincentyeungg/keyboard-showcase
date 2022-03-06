@@ -2,18 +2,18 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 interface UserPayload {
-    id: string;
-    email: string;
+  id: string;
+  email: string;
 }
 
 // alter the request object to add an additional optional property of type UserPayload
 // this way, we can now add a new property of currentUser on the req object from Express
 declare global {
-    namespace Express {
-        interface Request {
-            currentUser?: UserPayload;
-        }
+  namespace Express {
+    interface Request {
+      currentUser?: UserPayload;
     }
+  }
 }
 
 export const currentUser = (
@@ -28,7 +28,10 @@ export const currentUser = (
   }
 
   try {
-    const payload = jwt.verify(req.session.jwt, process.env.JWT_KEY!) as UserPayload;
+    const payload = jwt.verify(
+      req.session.jwt,
+      process.env.JWT_KEY!
+    ) as UserPayload;
 
     // add a currentUser property on the req object, need to augment req object properties to add additional optional property 'currentUser'
     req.currentUser = payload;
