@@ -10,12 +10,12 @@ const start = async () => {
         throw new Error('JWT_KEY must be defined');
     }
 
-    if (!process.env.MONGO_URI) {
+    if(!process.env.MONGO_URI) {
         throw new Error('MONGO_URI must be defined');
     }
 
     try {
-        // connect to mongodb in our auth-mongo pod using the cluster ip service created
+        // connect to mongodb in our tickets-mongo pod using the cluster ip service created
         await mongoose.connect(process.env.MONGO_URI);
     } catch (err) {
         console.error(err);

@@ -2,12 +2,8 @@ import express from 'express';
 import 'express-async-errors';
 import { json } from 'body-parser';
 import cookieSession from 'cookie-session';
-
-import { currentUserRouter } from './routes/current-user';
-import { signinRouter } from './routes/signin';
-import { signoutRouter } from './routes/signout';
-import { signupRouter } from './routes/signup';
-import { errorHandler, NotFoundError } from '@ahjoo123_tickets/common';
+import { errorHandler, NotFoundError, currentUser } from '@ahjoo123_tickets/common';
+import { createTicketRouter } from './routes/new';
 
 const app = express();
 // we are using proxy of ingress-nginx
@@ -26,17 +22,16 @@ app.use(
     })
 );
 
-// routes
-app.use(currentUserRouter);
-app.use(signinRouter);
-app.use(signoutRouter);
-app.use(signupRouter);
+// custom middleware functions
+app.use(currentUser);
 
+// routes
+app.use(createTicketRouter);
+
+// for any other endpoint not specified, throw not found error
 app.all('*', async (req, res) => {
     throw new NotFoundError();
 });
-
-// custom middleware functions
 
 // error middleware
 app.use(errorHandler);
