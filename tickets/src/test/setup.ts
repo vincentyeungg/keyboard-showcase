@@ -24,6 +24,7 @@ beforeAll(async () => {
 
 // hook function to be called before each test
 beforeEach(async () => {
+    // clear the collection to perform new tests
     const collections = await mongoose.connection.db.collections();
 
     for (let collection of collections) {
@@ -42,7 +43,7 @@ global.getCookie = () => {
     
     // build a JWT payload { id, email }
     const payload = {
-        id: 'qwefsdd12391923nfs', // some fake id
+        id: new mongoose.Types.ObjectId().toHexString(), // some fake id
         email: 'test@test.com'
     };
 
