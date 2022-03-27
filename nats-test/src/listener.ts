@@ -1,5 +1,6 @@
-import nats, { Message } from 'node-nats-streaming';
+import nats from 'node-nats-streaming';
 import { randomBytes } from 'crypto';
+import { TicketCreatedListener } from './events/ticket-created-listener';
 
 console.clear();
 
@@ -16,25 +17,8 @@ stan.on('connect', () => {
         process.exit();
     });
 
-    // to set different options, we can use NATS method of chaining different method calls
-    const options = stan
-        .subscriptionOptions()
-        .setManualAckMode(true);
-
-    // create a subscription to listen to a specific channel
-    const subscription = stan.subscribe('ticket:created', 'orders-service-queue-group', options);
-
-    // listen for 'message' event from subscription to specific channel
-    subscription.on('message', (msg: Message) => {
-        const data = msg.getData();
-
-        if (typeof data === 'string') {
-            console.log(`Received event #${msg.getSequence()}, with data: ${data}`);
-        }
-
-        // manually acknowledge if using manual ack mode
-        msg.ack();
-    });
+    // create a new instance of our custom Listener and listen for incoming events on the specified channel
+    new TicketCreatedListener(stan).listen();
 });
 
 process.on('SIGINT', () => stan.close());
