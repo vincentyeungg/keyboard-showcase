@@ -1,4 +1,5 @@
 import nats from 'node-nats-streaming';
+import { TicketCreatedPublisher } from './events/ticket-created-publisher';
 
 console.clear();
 
@@ -7,17 +8,30 @@ const stan = nats.connect('ticketing', 'abc', {
 });
 
 // after connected to NATS, it emits a 'connect' event -> listen for this event to know when connected
-stan.on('connect', () => {
+stan.on('connect', async () => {
     console.log('publisher connected to NATS');
 
-    // must only send raw data or strings (JSON) to NATS
-    const data = JSON.stringify({
-        id: '123',
-        title: 'concert',
-        price: 20
-    });
+    const publisher = new TicketCreatedPublisher(stan);
 
-    stan.publish('ticket:created', data, () => {
-        console.log('event published');
-    });
+    // need to return a promise in publish method to use await/async
+    try {
+        await publisher.publish({
+            id: '123',
+            title: 'concert',
+            price: 20
+        });   
+    } catch (error) {
+        console.log(error);
+    }
+
+    // must only send raw data or strings (JSON) to NATS
+    // const data = JSON.stringify({
+    //     id: '123',
+    //     title: 'concert',
+    //     price: 20
+    // });
+
+    // stan.publish('ticket:created', data, () => {
+    //     console.log('event published');
+    // });
 });
