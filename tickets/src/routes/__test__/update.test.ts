@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { app } from '../../app';
+// this will be redirected to the mock implementation of nats-wrapper under __mocks__
+import { natsWrapper } from '../../nats-wrapper';
 
 it('returns a 404 if the provided id does not exist', async () => {
     const id = new mongoose.Types.ObjectId().toHexString();
@@ -117,4 +119,32 @@ it('updates the ticket provided valid inputs', async () => {
 
     expect(ticketResponse.body.title).toEqual(new_title);
     expect(ticketResponse.body.price).toEqual(new_price);
+});
+
+it('publishes an event', async () => {
+    const cookie = global.getCookie();
+
+    // response below contains ticket created by user of particular id
+    const response = await request(app)
+        .post('/api/tickets')
+        .set('Cookie', cookie)
+        .send({
+            title: 'test_title',
+            price: 20
+        });
+
+    // try to edit the ticket
+    const new_title = 'new_title';
+    const new_price = 100;
+
+    await request(app)
+        .put(`/api/tickets/${response.body.id}`)
+        .set('Cookie', cookie)
+        .send({
+            title: new_title,
+            price: new_price
+        })
+        .expect(200);
+
+    expect(natsWrapper.client.publish).toHaveBeenCalled();
 });

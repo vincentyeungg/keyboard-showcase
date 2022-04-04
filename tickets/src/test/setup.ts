@@ -10,6 +10,9 @@ declare global {
     var getCookie: () => string[];
 }
 
+// tell Jest to use the fake file in our test file for the fake implementation of NATS
+jest.mock('../nats-wrapper');
+
 // hook function to be called at the start of test script
 beforeAll(async () => {
     // using a test JWT_KEY
@@ -24,6 +27,9 @@ beforeAll(async () => {
 
 // hook function to be called before each test
 beforeEach(async () => {
+    // for each new test, reset the NATS mock for different tests
+    jest.clearAllMocks();
+
     // clear the collection to perform new tests
     const collections = await mongoose.connection.db.collections();
 
